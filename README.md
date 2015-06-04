@@ -4,6 +4,12 @@ Open and search files directly from your source code.
 
 ![Demo: Smart Region](https://raw.githubusercontent.com/gbaptista/sublime-3-smart-region/master/demo.gif)
 
+### Hiding text underline
+`User/Preferences.sublime-settings`:
+```javascript
+"smart_region_draw_regions": ["hide_on_minimap", "hidden"]
+```
+
 ### Command Palette
 
 Smart Region: Open `smart_region_open`
