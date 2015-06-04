@@ -52,11 +52,6 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
           self.view.window().run_command("show_overlay", {"overlay": "goto", "show_files": True, "text": relative_path})
           sublime.status_message('SmartRegion | Search for file.')
         elif len(founded_files) == 1:
-          print("\n")
-          print(target)
-          print(len(founded_files))
-          print(founded_files)
-          print("\n")
           self.open_file(founded_files[0], line)
           sublime.status_message('SmartRegion | File opened.')
         else:
