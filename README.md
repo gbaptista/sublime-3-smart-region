@@ -51,3 +51,7 @@ Smart Region: Create Regions `smart_region_create_regions`
   "command": "smart_region_open"
 }
 ```
+
+### To-Do
+* Windows support.
+* URL's support.
