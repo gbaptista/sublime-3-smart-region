@@ -38,22 +38,25 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
                 for file_name in files:
                   file_path = root + '/' + file_name
                   if re.search(target, file_name) or re.search(target, file_path):
-                    if(os.path.isfile(file_name)):
-                      founded_files.append(file_name)
-                    elif(os.path.isfile(file_path)):
+                    if(os.path.isfile(file_path)):
                       founded_files.append(file_path)
+                    elif(os.path.isfile(file_name)):
+                      founded_files.append(file_name)
 
         if SmartRegion.get_setting("debug"):
           print('founded_files:')
           print(founded_files)
-
-        reversed(founded_files)
 
         if len(founded_files) > 1:
           relative_path = target.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
           self.view.window().run_command("show_overlay", {"overlay": "goto", "show_files": True, "text": relative_path})
           sublime.status_message('SmartRegion | Search for file.')
         elif len(founded_files) == 1:
+          print("\n")
+          print(target)
+          print(len(founded_files))
+          print(founded_files)
+          print("\n")
           self.open_file(founded_files[0], line)
           sublime.status_message('SmartRegion | File opened.')
         else:
