@@ -47,6 +47,8 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
           print('founded_files:')
           print(founded_files)
 
+        reversed(founded_files)
+
         if len(founded_files) > 1:
           relative_path = target.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
           self.view.window().run_command("show_overlay", {"overlay": "goto", "show_files": True, "text": relative_path})
