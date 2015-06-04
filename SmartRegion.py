@@ -126,93 +126,97 @@ class SmartRegion():
       return target
 
   def create_regions(view):
-    regions = []
+    if view.size() > 100000:
+      sublime.status_message('SmartRegion | File is too large: ' + str(view.size()) + ' chars')
+    else:
+      sublime.status_message('SmartRegion | Create Regions: ' + str(view.size()) + ' chars')
+      regions = []
 
-    if view.window() and view.window().project_data():
-      for folder in view.window().project_data()['folders']:
-        for root, dirs, files in os.walk(folder["path"]):
+      if view.window() and view.window().project_data():
+        for folder in view.window().project_data()['folders']:
+          for root, dirs, files in os.walk(folder["path"]):
 
-          # [TODO] Needs a better strategy...
-          if re.search(r"\.git([^i]|$)", root):
-            next
-          else:
-            for target in view.find_all(re.escape(root)):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+            # [TODO] Needs a better strategy...
+            if re.search(r"\.git([^i]|$)", root):
+              next
+            else:
+              for target in view.find_all(re.escape(root)):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-            for target in view.find_all(re.escape(root) + ':\d{1,}'):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+              for target in view.find_all(re.escape(root) + ':\d{1,}'):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-            # [TODO] Maybe this is not a good idea...
-            for dir_name in dirs:
-              for target in view.find_all(re.escape(dir_name)):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+              # [TODO] Maybe this is not a good idea...
+              for dir_name in dirs:
+                for target in view.find_all(re.escape(dir_name)):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(dir_name) + ':\d{1,}'):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(dir_name) + ':\d{1,}'):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-            for file_name in files:
-              full_path = root + '/' + file_name
-              relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
+              for file_name in files:
+                full_path = root + '/' + file_name
+                relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
 
-              for target in view.find_all(re.escape(file_name)):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(file_name)):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(file_name) + ':\d{1,}'):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(file_name) + ':\d{1,}'):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(relative_path)):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(relative_path)):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(relative_path) + ':\d{1,}'):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(relative_path) + ':\d{1,}'):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(full_path)):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(full_path)):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(full_path) + ':\d{1,}'):
-                regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
+                for target in view.find_all(re.escape(full_path) + ':\d{1,}'):
+                  regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-    file_regex = "((\s\/|^\/)[\w|\-|\/|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
+      file_regex = "((\s\/|^\/)[\w|\-|\/|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
 
-    for target in view.find_all(file_regex):
-      regions.append(view.find(view.substr(target).strip(), target.begin()))
+      for target in view.find_all(file_regex):
+        regions.append(view.find(view.substr(target).strip(), target.begin()))
 
-    for target in view.find_all(file_regex + ':\d{1,}'):
-      regions.append(view.find(view.substr(target).strip(), target.begin()))
+      for target in view.find_all(file_regex + ':\d{1,}'):
+        regions.append(view.find(view.substr(target).strip(), target.begin()))
 
-    flags = 0
+      flags = 0
 
-    if "draw_empty" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_EMPTY
+      if "draw_empty" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_EMPTY
 
-    if "hide_on_minimap" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.HIDE_ON_MINIMAP
+      if "hide_on_minimap" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.HIDE_ON_MINIMAP
 
-    if "draw_empty_as_overwrite" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_EMPTY_AS_OVERWRITE
+      if "draw_empty_as_overwrite" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_EMPTY_AS_OVERWRITE
 
-    if "draw_no_fill" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_NO_FILL
+      if "draw_no_fill" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_NO_FILL
 
-    if "draw_no_outline" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_NO_OUTLINE
+      if "draw_no_outline" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_NO_OUTLINE
 
-    if "draw_solid_underline" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_SOLID_UNDERLINE
+      if "draw_solid_underline" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_SOLID_UNDERLINE
 
-    if "draw_stippled_underline" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_STIPPLED_UNDERLINE
+      if "draw_stippled_underline" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_STIPPLED_UNDERLINE
 
-    if "draw_squiggly_underline" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.DRAW_SQUIGGLY_UNDERLINE
+      if "draw_squiggly_underline" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.DRAW_SQUIGGLY_UNDERLINE
 
-    if "persistent" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.PERSISTENT
+      if "persistent" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.PERSISTENT
 
-    if "hidden" in SmartRegion.get_setting("draw_regions"):
-      flags += sublime.HIDDEN
+      if "hidden" in SmartRegion.get_setting("draw_regions"):
+        flags += sublime.HIDDEN
 
-    view.add_regions('smart_region', regions, 'code', '', flags)
+      view.add_regions('smart_region', regions, 'code', '', flags)
 
   def get_setting(config):
     settings = sublime.load_settings('Preferences.sublime-settings')
