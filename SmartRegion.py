@@ -129,7 +129,6 @@ class SmartRegion():
     if view.size() > 100000:
       sublime.status_message('SmartRegion | File is too large: ' + str(view.size()) + ' chars')
     else:
-      sublime.status_message('SmartRegion | Create Regions: ' + str(view.size()) + ' chars')
       regions = []
 
       if view.window() and view.window().project_data():
