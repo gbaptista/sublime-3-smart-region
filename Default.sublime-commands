@@ -1,0 +1,10 @@
+[
+  {
+    "caption": "Smart Region: Create Regions",
+    "command": "smart_region_create_regions"
+  },
+    {
+    "caption": "Smart Region: Open",
+    "command": "smart_region_open"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "smart_region_create_regions_on": ["load", "modified"],
+
+  // Draw Regions Options:
+  // draw_empty, hide_on_minimap, draw_empty_as_overwrite, draw_no_fill
+  // draw_no_outline, draw_solid_underline, draw_stippled_underline
+  // draw_squiggly_underline, persistent, hidden
+  // Suggested combinations:
+  //
+  //   ["hide_on_minimap", "draw_no_fill", "draw_no_outline", "draw_stippled_underline"]
+  //
+  //   ["hide_on_minimap", "draw_no_fill", "draw_no_outline", "draw_solid_underline"]
+  //
+  //   ["hide_on_minimap", "hidden"]
+  //
+  "smart_region_draw_regions": ["hide_on_minimap", "draw_no_fill", "draw_no_outline", "draw_solid_underline"],
+
+  "smart_region_debug": false
+}
