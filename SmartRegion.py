@@ -185,9 +185,6 @@ class SmartRegion():
                 for target in view.find_all(re.escape(full_path) + ':\d{1,}'):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-
-      file_regex = ''
-
       if sublime.platform() == 'windows':
         file_regex = "(([\s|\"|']\\\|^\\\)[\w|\-|\\\|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
       else:
