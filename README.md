@@ -59,6 +59,5 @@ Smart Region: Create Regions `smart_region_create_regions`
 ```
 
 ### To-Do
-* Windows support.
 * URL's support.
 * Improve performance for large files.

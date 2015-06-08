@@ -36,7 +36,10 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
                 if not first_root:
                   first_root = root
                 for file_name in files:
-                  file_path = root + '/' + file_name
+                  if sublime.platform() == 'windows':
+                    file_path = root + '\\' + file_name
+                  else:
+                    file_path = root + '/' + file_name
                   if re.search(target, file_name) or re.search(target, file_path):
                     if(os.path.isfile(file_path)):
                       founded_files.append(file_path)
@@ -48,7 +51,10 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
           print(founded_files)
 
         if len(founded_files) > 1:
-          relative_path = target.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
+          if sublime.platform() == 'windows':
+            relative_path = target.replace(sublime.active_window().extract_variables()['folder'] + '\\', '')
+          else:
+            relative_path = target.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
           self.view.window().run_command("show_overlay", {"overlay": "goto", "show_files": True, "text": relative_path})
           sublime.status_message('SmartRegion | Search for file.')
         elif len(founded_files) == 1:
@@ -154,8 +160,12 @@ class SmartRegion():
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
               for file_name in files:
-                full_path = root + '/' + file_name
-                relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
+                if sublime.platform() == 'windows':
+                  full_path = root + '\\' + file_name
+                  relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '\\', '')
+                else:
+                  full_path = root + '/' + file_name
+                  relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
 
                 for target in view.find_all(re.escape(file_name)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
@@ -175,13 +185,21 @@ class SmartRegion():
                 for target in view.find_all(re.escape(full_path) + ':\d{1,}'):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-      file_regex = "((\s\/|^\/)[\w|\-|\/|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
+
+      file_regex = ''
+
+      if sublime.platform() == 'windows':
+        file_regex = "(([\s|\"|']\\\|^\\\)[\w|\-|\\\|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
+      else:
+        file_regex = "(([\s|\"|']\/|^\/)[\w|\-|\/|\@|\.]{1,}[\.[\w|\-]{1,}|$])"
 
       for target in view.find_all(file_regex):
-        regions.append(view.find(view.substr(target).strip(), target.begin()))
+        file_path = re.sub(r'^[\'|"]', '', view.substr(target).strip())
+        regions.append(view.find(file_path, target.begin()))
 
       for target in view.find_all(file_regex + ':\d{1,}'):
-        regions.append(view.find(view.substr(target).strip(), target.begin()))
+        file_path = re.sub(r'^[\'|"]', '', view.substr(target).strip())
+        regions.append(view.find(file_path, target.begin()))
 
       flags = 0
 
