@@ -1,4 +1,5 @@
 import sublime, sublime_plugin, os, re, time
+from threading import Thread
 
 class SmartRegionOpen(sublime_plugin.TextCommand):
   def run(self, edit, **args):
@@ -30,8 +31,9 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
           for folder in self.view.window().project_data()['folders']:
             for root, dirs, files in os.walk(folder["path"]):
               # [TODO] Needs a better strategy...
+              # Ignore all git files, unless '.gitignore'.
               if re.search(r"\.git([^i]|$)", root):
-                next
+                continue
               else:
                 if not first_root:
                   first_root = root
@@ -100,13 +102,37 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
   def want_event(self):
     return True
 
-
 class SmartRegionCreateRegions(sublime_plugin.TextCommand):
   def run(self, edit, **args):
-    SmartRegion.create_regions(self.view)
+    if SmartRegion.get_setting("debug"):
+      sublime.active_window().run_command('show_panel', {"panel": "console", "toggle": False})
+      print('>>>>>>>>>>>>>>>>>>> SmartRegionCreateRegions Debug:')
+
+    global sublime_3_plugin_smart_region_async_instance
+    sublime_3_plugin_smart_region_async_instance.create_regions(self.view)
 
   def want_event(self):
     return True
+
+class SmartRegionAsync():
+  # threads = {}
+
+  def create_regions(self, view):
+    Thread(target=SmartRegion.create_regions, args=([view])).start()
+
+    # if not self.threads.get(view.id()):
+    #   self.threads[view.id()] = []
+
+    # [TODO] Performance stuffs...
+    # for thread in self.threads[view.id()]:
+    #   if thread.isAlive():
+    #     alives += 1
+
+    # thread = Thread(target=SmartRegion.create_regions, args=([view]))
+    # self.threads[view.id()].append(thread)
+    # thread.start()
+
+sublime_3_plugin_smart_region_async_instance = SmartRegionAsync()
 
 class SmartRegion():
   def get_target(view, args):
@@ -131,6 +157,28 @@ class SmartRegion():
     else:
       return target
 
+  def build_find_regex(pattern, with_lines = False):
+    pattern = re.escape(pattern)
+
+    if with_lines:
+      return pattern + ':\d{1,}'
+    else:
+      return pattern
+
+    # [TODO] Better folder match.
+    # # If not looks like a file:
+    # if not re.search("\\|/", pattern) and not re.search('\.', pattern):
+    #   if with_lines:
+    #     return '^|\s' + pattern + ':\d{1,}'
+    #   else:
+    #     return '^|\s' + pattern + '\s|$'
+    # # If looks like a file:
+    # else:
+    #   if with_lines:
+    #     return pattern + ':\d{1,}'
+    #   else:
+    #     return pattern
+
   def create_regions(view):
     if view.size() > 100000:
       sublime.status_message('SmartRegion | File is too large: ' + str(view.size()) + ' chars')
@@ -142,21 +190,22 @@ class SmartRegion():
           for root, dirs, files in os.walk(folder["path"]):
 
             # [TODO] Needs a better strategy...
+            # Ignore all git files, unless '.gitignore'.
             if re.search(r"\.git([^i]|$)", root):
-              next
+              continue
             else:
-              for target in view.find_all(re.escape(root)):
+              for target in view.find_all(SmartRegion.build_find_regex(root)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-              for target in view.find_all(re.escape(root) + ':\d{1,}'):
+              for target in view.find_all(SmartRegion.build_find_regex(root, True)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
               # [TODO] Maybe this is not a good idea...
               for dir_name in dirs:
-                for target in view.find_all(re.escape(dir_name)):
+                for target in view.find_all(SmartRegion.build_find_regex(dir_name)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(dir_name) + ':\d{1,}'):
+                for target in view.find_all(SmartRegion.build_find_regex(dir_name, True)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
               for file_name in files:
@@ -167,22 +216,22 @@ class SmartRegion():
                   full_path = root + '/' + file_name
                   relative_path = full_path.replace(sublime.active_window().extract_variables()['folder'] + '/', '')
 
-                for target in view.find_all(re.escape(file_name)):
+                for target in view.find_all(SmartRegion.build_find_regex(file_name)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(file_name) + ':\d{1,}'):
+                for target in view.find_all(SmartRegion.build_find_regex(file_name, True)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(relative_path)):
+                for target in view.find_all(SmartRegion.build_find_regex(relative_path)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(relative_path) + ':\d{1,}'):
+                for target in view.find_all(SmartRegion.build_find_regex(relative_path, True)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(full_path)):
+                for target in view.find_all(SmartRegion.build_find_regex(full_path)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
-                for target in view.find_all(re.escape(full_path) + ':\d{1,}'):
+                for target in view.find_all(SmartRegion.build_find_regex(full_path, True)):
                   regions.append(view.find(re.escape(view.substr(target).strip()), target.begin()))
 
       if sublime.platform() == 'windows':
@@ -244,9 +293,11 @@ class KeyBindingListener(sublime_plugin.EventListener):
 
   def on_load_async(self, view):
     if "load" in SmartRegion.get_setting("create_regions_on"):
-      SmartRegion.create_regions(view)
+      global sublime_3_plugin_smart_region_async_instance
+      sublime_3_plugin_smart_region_async_instance.create_regions(view)
 
   def on_modified_async(self, view):
     if "modified" in SmartRegion.get_setting("create_regions_on"):
-      SmartRegion.create_regions(view)
+      global sublime_3_plugin_smart_region_async_instance
+      sublime_3_plugin_smart_region_async_instance.create_regions(view)
 
