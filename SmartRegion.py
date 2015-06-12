@@ -1,5 +1,5 @@
 import sublime, sublime_plugin, os, re, time
-from threading import Thread
+# from threading import Thread
 
 class SmartRegionOpen(sublime_plugin.TextCommand):
   def run(self, edit, **args):
@@ -106,7 +106,9 @@ class SmartRegionAsync():
   # threads = {}
 
   def create_regions(self, view):
-    Thread(target=SmartRegion.create_regions, args=([view])).start()
+    SmartRegion.create_regions(view)
+
+    # Thread(target=SmartRegion.create_regions, args=([view])).start()
 
     # if not self.threads.get(view.id()):
     #   self.threads[view.id()] = []
