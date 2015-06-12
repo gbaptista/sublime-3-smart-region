@@ -102,18 +102,6 @@ class SmartRegionOpen(sublime_plugin.TextCommand):
   def want_event(self):
     return True
 
-class SmartRegionCreateRegions(sublime_plugin.TextCommand):
-  def run(self, edit, **args):
-    if SmartRegion.get_setting("debug"):
-      sublime.active_window().run_command('show_panel', {"panel": "console", "toggle": False})
-      print('>>>>>>>>>>>>>>>>>>> SmartRegionCreateRegions Debug:')
-
-    global sublime_3_plugin_smart_region_async_instance
-    sublime_3_plugin_smart_region_async_instance.create_regions(self.view)
-
-  def want_event(self):
-    return True
-
 class SmartRegionAsync():
   # threads = {}
 
@@ -133,6 +121,18 @@ class SmartRegionAsync():
     # thread.start()
 
 sublime_3_plugin_smart_region_async_instance = SmartRegionAsync()
+
+class SmartRegionCreateRegions(sublime_plugin.TextCommand):
+  def run(self, edit, **args):
+    if SmartRegion.get_setting("debug"):
+      sublime.active_window().run_command('show_panel', {"panel": "console", "toggle": False})
+      print('>>>>>>>>>>>>>>>>>>> SmartRegionCreateRegions Debug:')
+
+    global sublime_3_plugin_smart_region_async_instance
+    sublime_3_plugin_smart_region_async_instance.create_regions(self.view)
+
+  def want_event(self):
+    return True
 
 class SmartRegion():
   def get_target(view, args):
